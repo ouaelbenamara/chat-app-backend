@@ -8,21 +8,22 @@ const { usersController,
     deleteUserController,
     logInController, 
     logOutController,
+    verificationController,
+
     protectedController } = require('../controllers/User');
 require('../config/authenticationStrategy');
 const { authenticate } = require('../config/authenticationStrategy');
 
 //////////////
-const passport = require('passport');
 router.get('/', usersController)
     .get('/user', singleUsersController)
 
     .post('/register', registerController)
 
     .post('/logIn', logInController)
-    .get('/protected', authenticate, protectedController)
+    .get('/protected/:username', authenticate, protectedController)
     .post('/signOut', logOutController)
-
+    .get('/verify/:username/:token',verificationController)
     .put('/update/:id', updateUserController)
 
     .delete('/delete/:id', deleteUserController)

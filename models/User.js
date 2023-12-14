@@ -4,17 +4,16 @@ const mongoose = require('mongoose');
 
 const User = require('../schema/User')
 
-const addNewUser = async ({ username, email, password ,salt}) => {
-    console.log('password',password,'salt:',salt)
+const addNewUser = async ({ username, email, password, salt }) => {
     let savedUser;
     const newUser = new User({
         username: username,
         email: email,
         password: password,
-        salt:salt,
+        salt: salt,
     });
     try {
-         savedUser = await newUser.save();
+        savedUser = await newUser.save();
 
     } catch (e) {
         console.log('error while adding a user to the database', e)
@@ -37,10 +36,15 @@ const deleteUser = async ({ userNameToDelete }) => {
 
 }
 
-const updateUser = async ({ userNameToUpdate, password, email }) => {
+const updateUser = async ( userNameToUpdate, password, email,isVerified=false ) => {
 
     try {
-        const updatedUser = await User.updateOne({ username: userNameToUpdate }, { username: userNameToUpdate, password, email });
+        const updatedUser = await User.updateOne({ username: userNameToUpdate }, {
+            username: userNameToUpdate,
+            password,
+            email,
+            isVerified: (isVerified) ? true : false
+        });
 
     } catch (e) {
         console.log('error while updating user on the database', e)
@@ -51,7 +55,7 @@ const updateUser = async ({ userNameToUpdate, password, email }) => {
 }
 
 const getUsers = async () => {
-    let users ;
+    let users;
     try {
         users = await User.find();
 
@@ -64,9 +68,9 @@ const getUsers = async () => {
 }
 
 const getUser = async (username) => {
-    let user ;
+    let user;
     try {
-        user = await User.findOne({username:username});
+        user = await User.findOne({ username: username });
 
     } catch (e) {
         console.log('error while finding the user on the database', e)
@@ -76,15 +80,15 @@ const getUser = async (username) => {
 
 }
 
-const singInUser = async ({ email,password,username}) => {
-    let user ;
+const singInUser = async ({ email, password, username }) => {
+    let user;
     try {
-        user = await User.findOne({email:emailToFind});
-        if(!user){
+        user = await User.findOne({ email: emailToFind });
+        if (!user) {
             return false;
         }
-        
-    
+
+
 
     } catch (e) {
         console.log('error while finding the user', e)

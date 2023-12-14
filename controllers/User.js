@@ -14,9 +14,16 @@ const {
 
 
 const { issueJWT } = require('../services/userAuth')
+const { sendVerificationEmail,
+    verifyEmailToken,
+
+} = require('../services/mail')
 const {
     generatePassword,
-    validePassword } = require('../lib/utils')
+    validePassword,
+    generateToken,
+    verifyToken } = require('../lib/utils');
+const { response } = require('express');
 
 
 const usersController = async (req, res) => {
@@ -29,10 +36,15 @@ const usersController = async (req, res) => {
 }
 
 const protectedController = async (req, res) => {
+const username  = req.params.username
+    getUser(username).then(response=>{
+        if(!response){
+            return res.status(401).send('you have to verity your account in order to have full access')
+        }
+        res.json({ success: true, message: 'you are authorized' })
 
+    })
 
-
-    res.json({ success: true, message: 'you are authorized' })
 
 }
 
@@ -55,6 +67,7 @@ const registerController = async (req, res) => {
     if (!user) {
         return res.status(500).send("error while creating a new user")
     }
+
     const token = issueJWT(user);
     res.json({ success: true, user: user, token: token.token, expiresIn: token.expires })
 
@@ -70,11 +83,22 @@ const logInController = async (req, res, next) => {
             const isValide = validePassword(req.body.password, user.hash, user.salt)
             if (isValide) {
 
+                if (!user.isVerified) {
+                    generateToken(user.email)
+                        .then(token => {
+
+                            sendVerificationEmail(user.username,user.email, token)
+
+                        }).catch(err => {
+                            console.log('error while generating the token for the email', err)
+                            return false
+                        })
+                }
                 const token = issueJWT(user)
                 const expirationTime = new Date();
                 expirationTime.setMinutes(expirationTime.getMinutes() + 15);
                 res.cookie('token', token.token, { httpOnly: true, expires: expirationTime })
-                res.json({ success: true, user: user, token: token.token, expiresIn: token.expires })
+                res.json({ success: true, user: user, token: token.token, expiresIn: token.expires, message: user.isVerified ? 'go click the link on you email to verify your account' : 'verified' })
             } else {
                 res.status(401).json({ success: false, message: 'you entred the wrong password' })
             }
@@ -117,13 +141,50 @@ const updateUserController = async (req, res) => {
     if (!userNameToUpdate) {
         return res.status(500).send("username to delete is required")
     }
-    const respons = await updateUser({ userNameToUpdate, password, email });
+    const respons = await updateUser(userNameToUpdate, password, email);
     console.log(respons)
     if (!respons) {
         return res.status(500).send("error while updating user")
     }
 
     res.send('<h1>user updated</h1>')
+}
+
+
+const verificationController = async (req, res) => {
+    const username = req.params.username;
+    const token = req.params.token;
+    if (!username || !token) {
+        console.log('all field are required')
+        return false
+    }
+
+
+    const isValide = verifyToken(token);
+    if (!isValide) {
+        console.log('invalide email token')
+        return false
+    }
+    const user = await getUser(username).catch(err=>{
+        return res.status(401).send('error while etting the user to verify')
+    })
+    await updateUser(username, user.password, user.email, true)
+        .then(response => {
+            if (!response) {
+                return res.status(401).send('user not found')
+
+               
+            }
+            res.send('<h1>Your account has been verified successfully</h1>')
+
+        }).catch(err => {
+            return res.status(401).send('error while updation the user verification', err)
+
+        })
+
+
+
+
 }
 
 
@@ -136,5 +197,6 @@ module.exports = {
     deleteUserController,
     logInController,
     protectedController,
-    logOutController
+    logOutController,
+    verificationController
 };
