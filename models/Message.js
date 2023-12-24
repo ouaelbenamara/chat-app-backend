@@ -1,0 +1,84 @@
+// here we find all the interaction whith the database for a given schema
+const Message = require('../schema/Message')
+
+const addNewMessage = async ({ sender, message, distination }) => {
+    let savedMessage;
+    const newMessage = new Message({
+        sender,
+        content: message,
+        distination
+    });
+    try {
+        savedMessage = await newMessage.save();
+
+    } catch (e) {
+        console.log('error while adding a Message to the database', e)
+        return false;
+    }
+    return savedMessage
+}
+
+const deleteMessage = async ({ messageId, userId }) => {
+
+    try {
+        const deletedMessage = await Message.deleteOne({ _id: messageId, sender: userId });
+        // console.log(deletedMessage);
+    } catch (e) {
+        console.log('error while deleting a Message on the database', e)
+        return false;
+    }
+    return true
+
+}
+
+const updateMessage = async (messageId, newMessage) => {
+
+    try {
+        const updatedMessage = await Message.updateOne({ _id: messageId }, {
+            content: newMessage,
+        });
+        console.log(updatedMessage)
+
+    } catch (e) {
+        console.log('error while updating a  Message on the database', e)
+        return false;
+    }
+    return true
+
+}
+
+const getMessages = async (userId) => {
+    let Messages;
+    try {
+        Messages = await Message.find({ sender: userId });
+
+    } catch (e) {
+        console.log('error while adding a Message to the database', e)
+        return false;
+    }
+    return Messages;
+
+}
+
+// const getMessage = async (Messagename) => {
+//     let Message;
+//     try {
+//         Message = await Message.findOne({ Messagename: Messagename });
+
+//     } catch (e) {
+//         console.log('error while finding the Message on the database', e)
+//         return false;
+//     }
+//     return Message;
+
+// }
+
+
+module.exports = {
+    addNewMessage,
+    deleteMessage,
+    updateMessage,
+    getMessages,
+    
+
+}

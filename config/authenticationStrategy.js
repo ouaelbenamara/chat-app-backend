@@ -8,7 +8,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 const authenticate = async(req, res, next) => {
     try{
-
+console.log('entered the auth')
     
     let token = tokenFromCookie(req);
     if (!token) {
@@ -28,12 +28,19 @@ const authenticate = async(req, res, next) => {
     }
     // console.log(req.body)
     const {username} = req.body;
+    if(!username){
+        return res.status(401).json({ success: false, message: 'username is required ' })
+
+    }
     getUser(username)
         .then(user => {
             if (user) {
                 return next()
+            }else{
+                return res.status(401).json({ success: false, message: 'username not found ' })
             }
-          
+            console.log('entered the hehehe')
+
 
 
             

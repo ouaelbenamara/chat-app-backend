@@ -16,7 +16,7 @@ console.log('token or email are empty')
         to: email,
         subject: 'Verify Your Account',
         text:'Hello',
-        html: `<p>Click the following link to verify your account: <a href="http://localhost:3000/users/verify/${username}/${token}">Verify</a></p>`,
+        html: `<p>Click the following link to verify your account: <a href="http://localhost:5000/users/verify/${username}/${token}">Verify</a></p>`,
     }
 
    await transporter.sendMail(mailOptions).then(()=>{

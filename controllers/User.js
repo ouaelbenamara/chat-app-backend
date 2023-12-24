@@ -98,7 +98,7 @@ const logInController = async (req, res, next) => {
                 const expirationTime = new Date();
                 expirationTime.setMinutes(expirationTime.getMinutes() + 15);
                 res.cookie('token', token.token, { httpOnly: true, expires: expirationTime })
-                res.json({ success: true, user: user, token: token.token, expiresIn: token.expires, message: user.isVerified ? 'go click the link on you email to verify your account' : 'verified' })
+                res.json({ success: true, user: user, token: token.token, expiresIn: token.expires, message: user.isVerified ?'verified' : 'go click the link on you email to verify your account'   })
             } else {
                 res.status(401).json({ success: false, message: 'you entred the wrong password' })
             }
