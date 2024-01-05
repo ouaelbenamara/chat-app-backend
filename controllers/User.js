@@ -5,7 +5,8 @@ const { addNewUser,
     updateUser,
     getUsers,
     singInUser,
-    getUser
+    getUser,
+    getUserByEmail
 } = require('../models/User')
 const {
     addToken,
@@ -36,14 +37,16 @@ const usersController = async (req, res) => {
 }
 
 const protectedController = async (req, res) => {
-const username  = req.params.username
-    getUser(username).then(response=>{
-        if(!response){
-            return res.status(401).send('you have to verity your account in order to have full access')
-        }
-        res.json({ success: true, message: 'you are authorized' })
+    console.log("success")
+    // const userId = req.params.userId
+    res.json({ success: true, message: 'you are authorized' })
+    // getUser(userId).then(response=>{
+    //     if(!response){
+    //         return res.status(401).send('you have to verity your account in order to have full access')
+    //     }
+       
 
-    })
+    // })
 
 
 }
@@ -56,8 +59,10 @@ const singleUsersController = (req, res) => {
 
 const registerController = async (req, res) => {
     const { username, email, password } = req.body;
+    console.log(req.body)
     if (!username || !email || !password) {
-        return res.status(500).send("all fields are required")
+      
+        return res.status(400).send("all fields are required",username,email,password)
     }
 
     const { hash, salt } = await generatePassword(password)
@@ -65,22 +70,27 @@ const registerController = async (req, res) => {
 
     const user = await addNewUser({ username, email, password: hash, salt })
     if (!user) {
-        return res.status(500).send("error while creating a new user")
+        console.log('errrrrorr')
+        return res.status(409).json({success:false,message:'error while creating a new user'})
     }
 
-    const token = issueJWT(user);
-    res.json({ success: true, user: user, token: token.token, expiresIn: token.expires })
+    // const token = issueJWT(user);
+    res.json({user: user})
 
 }
 
 
 const logInController = async (req, res, next) => {
-    await getUser(req.body.username)
-        .then((user) => {
+    const email = req.body.email
+    // console.log(req.body)
+    await getUserByEmail(email)
+        .then(async(user) => {
             if (!user) {
+                
                 return res.status(401).json({ success: false, message: 'could not find user' })
             }
-            const isValide = validePassword(req.body.password, user.hash, user.salt)
+            const isValide = await validePassword(req.body.password, user.password, user.salt)
+            // console.log(isValide)
             if (isValide) {
 
                 if (!user.isVerified) {
@@ -97,8 +107,13 @@ const logInController = async (req, res, next) => {
                 const token = issueJWT(user)
                 const expirationTime = new Date();
                 expirationTime.setMinutes(expirationTime.getMinutes() + 15);
+                const USER = {
+                  _id:  user._id,
+                    email:user.email,
+                    username:user.username
+                }
                 res.cookie('token', token.token, { httpOnly: true, expires: expirationTime })
-                res.json({ success: true, user: user, token: token.token, expiresIn: token.expires, message: user.isVerified ?'verified' : 'go click the link on you email to verify your account'   })
+                res.json({ success: true, user: USER, token: token.token, expiresIn: token.expires, message: user.isVerified ?'verified' : 'go click the link on you email to verify your account'   })
             } else {
                 res.status(401).json({ success: false, message: 'you entred the wrong password' })
             }
@@ -152,10 +167,12 @@ const updateUserController = async (req, res) => {
 
 
 const verificationController = async (req, res) => {
-    const username = req.params.username;
+    console.log(req.params)
+    const userId = req.params.userId;
     const token = req.params.token;
-    if (!username || !token) {
-        console.log('all field are required')
+
+    if (!userId || !token) {
+        console.log('all field are required', userId,token)
         return false
     }
 
@@ -165,10 +182,10 @@ const verificationController = async (req, res) => {
         console.log('invalide email token')
         return false
     }
-    const user = await getUser(username).catch(err=>{
+    const user = await getUser(userId).catch(err=>{
         return res.status(401).send('error while etting the user to verify')
     })
-    await updateUser(username, user.password, user.email, true)
+    await updateUser(user.password, user.email, true)
         .then(response => {
             if (!response) {
                 return res.status(401).send('user not found')

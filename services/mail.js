@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 const EMAIL = process.env.EMAIL
 const SECRET_KEY = process.env.SECRET_KEY
 const sendVerificationEmail =async (username,email, token) => {
-
+console.log(email)
     if (!email || !token || !username ) {
 console.log('token or email are empty')
         return false
@@ -16,7 +16,7 @@ console.log('token or email are empty')
         to: email,
         subject: 'Verify Your Account',
         text:'Hello',
-        html: `<p>Click the following link to verify your account: <a href="http://localhost:5000/users/verify/${username}/${token}">Verify</a></p>`,
+        html: `<p>Click the following link to verify your account: <a href="http://localhost:5000/users/verify/${email}/${token}">Verify</a></p>`,
     }
 
    await transporter.sendMail(mailOptions).then(()=>{

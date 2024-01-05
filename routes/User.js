@@ -21,9 +21,9 @@ router.get('/', usersController)
     .post('/register', registerController)
 
     .post('/logIn', logInController)
-    .get('/protected/:username', authenticate, protectedController)
+    .get('/protected', authenticate, protectedController)
     .post('/signOut', logOutController)
-    .get('/verify/:username/:token',verificationController)
+    .get('/verify/:email/:token',verificationController)
     .put('/update/:id', updateUserController)
 
     .delete('/delete/:id', deleteUserController)

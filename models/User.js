@@ -16,6 +16,7 @@ const addNewUser = async ({ username, email, password, salt }) => {
         savedUser = await newUser.save();
 
     } catch (e) {
+        
         console.log('error while adding a user to the database', e)
         return false;
     }
@@ -36,11 +37,10 @@ const deleteUser = async ({ userNameToDelete }) => {
 
 }
 
-const updateUser = async ( userNameToUpdate, password, email,isVerified=false ) => {
+const updateUser = async ( password, email,isVerified=false ) => {
 
     try {
-        const updatedUser = await User.updateOne({ username: userNameToUpdate }, {
-            username: userNameToUpdate,
+        const updatedUser = await User.updateOne({ email: email }, {
             password,
             email,
             isVerified: (isVerified) ? true : false
@@ -67,10 +67,23 @@ const getUsers = async () => {
 
 }
 
-const getUser = async (username) => {
+const getUser = async (userId) => {
     let user;
     try {
-        user = await User.findOne({ username: username });
+        user = await User.findById(userId);
+
+    } catch (e) {
+        console.log('error while finding the user on the database', e)
+        return false;
+    }
+    return user;
+
+}
+
+const getUserByEmail = async (email) => {
+    let user;
+    try {
+        user = await User.findOne({email:email});
 
     } catch (e) {
         console.log('error while finding the user on the database', e)
@@ -106,5 +119,5 @@ module.exports = {
     getUsers,
     singInUser,
     getUser
-
+    , getUserByEmail
 }

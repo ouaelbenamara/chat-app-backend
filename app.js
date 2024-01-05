@@ -1,6 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const http = require('http');
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,7 +13,7 @@ const db = require('./config/connection');
 const cookieParser = require('cookie-parser');
 
 
-
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 

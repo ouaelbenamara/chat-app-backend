@@ -8,46 +8,30 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 const authenticate = async(req, res, next) => {
     try{
-console.log('entered the auth')
+// console.log('entered the auth')
     
     let token = tokenFromCookie(req);
+    // console.log(token)
     if (!token) {
         return res.status(401).json({ success: false, message: 'error while grabing the token from the cookie' })
     }
         const response =await getToken(token)
         if(response){
-
-            return res.status(401).json({ success: false, message: 'you are using a blackListed token ' })
-
-
+            return res.status(403).json({ success: false, message: 'you are using a blackListed token ' })
         }
 
     const isVerified =  jwt.verify(token, SECRET_KEY);
+    console.log("isVerified ",isVerified)
+
+        console.log(Date.now() ,'   ', isVerified.exp * 1000)
     if (!isVerified) {
-        return res.status(401).json({ success: false, message: 'invalide token ' })
-    }
-    // console.log(req.body)
-    const {username} = req.body;
-    if(!username){
-        return res.status(401).json({ success: false, message: 'username is required ' })
-
-    }
-    getUser(username)
-        .then(user => {
-            if (user) {
+        
+        return res.status(404).json({ success: false, message: 'invalide token ' })
+    } 
+   
+       
                 return next()
-            }else{
-                return res.status(401).json({ success: false, message: 'username not found ' })
-            }
-            console.log('entered the hehehe')
-
-
-
-            
-
-        }).catch(err =>{
-            console.log('ERROR WHILE FINDING THE USER')
-            next(err)});
+          
 
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
