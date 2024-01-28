@@ -4,6 +4,66 @@ const mongoose = require('mongoose');
 
 const User = require('../schema/User')
 
+const addRequest = async ({ userId, destination }) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(destination, { $addToSet: { invitations: userId } }, { new: true });
+
+        if (!updatedUser) {
+            throw new Error('Failed to send add request');
+        }
+
+        // console.log(updatedUser);
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+const getAddRequest = async (userId) => {
+
+    let addRequests = await User.findById(userId);
+    addRequests = addRequest.invitations
+    if (!addRequests) {
+        throw new Error('failed to send add request')
+    }
+    return addRequests
+
+}
+
+const deleteAddRequest = async ({ userId, sender }) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, { $pull: { invitations: sender } }, { new: true });
+
+        if (!updatedUser) {
+            throw new Error('Failed to delete add request');
+        }
+
+        // console.log(updatedUser);
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+const addFriend = async({userId,sender})=>{
+    const user = await User.findByIdAndUpdate(userId, { $addToSet: { friends: sender } }, { new: true });
+    const friend = await User.findByIdAndUpdate(sender, { $addToSet: { friends: userId } }, { new: true });
+// console.log('HETTTETETETET',user)
+    if (!user || !friend) {
+        throw new Error('failed to send add request')
+    }
+
+}
+
+const deleteFriend = async ({ userId, friendId })=>{
+    const user = await User.findByIdAndUpdate(userId, { $pull: { friends: friendId } }, { new: true });
+    const friend = await User.findByIdAndUpdate(friendId, { $pull: { friends: userId } }, { new: true });
+    // console.log('HETTTETETETET',user)
+    if (!user || !friend) {
+        throw new Error('failed to send add request')
+    }
+
+}
+
 const addNewUser = async ({ username, email, password, salt }) => {
     let savedUser;
     const newUser = new User({
@@ -16,7 +76,7 @@ const addNewUser = async ({ username, email, password, salt }) => {
         savedUser = await newUser.save();
 
     } catch (e) {
-        
+
         console.log('error while adding a user to the database', e)
         return false;
     }
@@ -36,23 +96,50 @@ const deleteUser = async ({ userNameToDelete }) => {
     return true
 
 }
-
-const updateUser = async ( password, email,isVerified=false ) => {
-
+async function updateUser({ id, password, salt, email, isVerified, username, image }) {
     try {
-        const updatedUser = await User.updateOne({ email: email }, {
-            password,
-            email,
-            isVerified: (isVerified) ? true : false
-        });
+        let updateObject = {};
+        // console.log(id)
+        if (password !== undefined) {
+            updateObject.password = password;
+        }
 
-    } catch (e) {
-        console.log('error while updating user on the database', e)
+        if (salt !== undefined) {
+            updateObject.salt = salt;
+        }
+
+        if (email !== undefined) {
+            updateObject.email = email;
+        }
+
+        if (username !== undefined) {
+            updateObject.username = username;
+        }
+
+        if (isVerified !== undefined) {
+            updateObject.isVerified = isVerified;
+        }
+
+        if (image !== undefined) {
+            updateObject.image = image;
+        }
+
+
+        const updatedUser = await User.findByIdAndUpdate(id, { $set: updateObject }, { new: true });
+        // console.log(updatedUser);
+
+        return true;
+    } catch (error) {
+        console.log('Error while updating user on the database', error);
         return false;
     }
-    return true
-
 }
+
+
+
+
+
+
 
 const getUsers = async () => {
     let users;
@@ -83,7 +170,7 @@ const getUser = async (userId) => {
 const getUserByEmail = async (email) => {
     let user;
     try {
-        user = await User.findOne({email:email});
+        user = await User.findOne({ email: email });
 
     } catch (e) {
         console.log('error while finding the user on the database', e)
@@ -93,23 +180,6 @@ const getUserByEmail = async (email) => {
 
 }
 
-const singInUser = async ({ email, password, username }) => {
-    let user;
-    try {
-        user = await User.findOne({ email: emailToFind });
-        if (!user) {
-            return false;
-        }
-
-
-
-    } catch (e) {
-        console.log('error while finding the user', e)
-        return false;
-    }
-    return user;
-
-}
 
 
 module.exports = {
@@ -117,7 +187,11 @@ module.exports = {
     deleteUser,
     updateUser,
     getUsers,
-    singInUser,
     getUser
-    , getUserByEmail
+    , getUserByEmail,
+    addRequest,
+    getAddRequest,
+    deleteAddRequest,
+    addFriend,
+    deleteFriend
 }

@@ -6,7 +6,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 const issueJWT = (user) => {
     const _id = user.id;
-    const expiresIn = '30m'
+    const expiresIn = '1h'
 
     let token;
 

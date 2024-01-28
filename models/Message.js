@@ -1,12 +1,14 @@
 // here we find all the interaction whith the database for a given schema
+const { default: mongoose } = require('mongoose');
 const Message = require('../schema/Message')
 
-const addNewMessage = async ({ sender, message, distination }) => {
+const addNewMessage = async ({ sender, message, destination }) => {
+    console.log(sender,message,destination)
     let savedMessage;
     const newMessage = new Message({
-        sender,
+        sender:sender,
         content: message,
-        distination
+        destination:destination
     });
     try {
         savedMessage = await newMessage.save();
@@ -31,10 +33,10 @@ const deleteMessage = async ({ messageId, userId }) => {
 
 }
 
-const updateMessage = async (messageId, newMessage) => {
+const updateMessage = async (messageId, newMessage,userId) => {
 
     try {
-        const updatedMessage = await Message.updateOne({ _id: messageId }, {
+        const updatedMessage = await Message.updateOne({ _id: messageId,sender:userId }, {
             content: newMessage,
         });
         console.log(updatedMessage)
@@ -47,11 +49,17 @@ const updateMessage = async (messageId, newMessage) => {
 
 }
 
-const getMessages = async (userId) => {
+const getMessages = async ({userId,destination}) => {
     let Messages;
+     userId = userId.toString();
+     destination = destination.toString();
     try {
-        Messages = await Message.find({ sender: userId });
-
+         Messages = await Message.find({
+            $or: [
+                { sender: userId, destination: destination },
+                { sender: destination, destination: userId },
+            ],
+        });
     } catch (e) {
         console.log('error while adding a Message to the database', e)
         return false;

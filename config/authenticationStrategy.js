@@ -10,7 +10,7 @@ const authenticate = async(req, res, next) => {
     try{
 // console.log('entered the auth')
     
-    let token = tokenFromCookie(req);
+    const token = tokenFromCookie(req);
     // console.log(token)
     if (!token) {
         return res.status(401).json({ success: false, message: 'error while grabing the token from the cookie' })
@@ -19,11 +19,12 @@ const authenticate = async(req, res, next) => {
         if(response){
             return res.status(403).json({ success: false, message: 'you are using a blackListed token ' })
         }
-
     const isVerified =  jwt.verify(token, SECRET_KEY);
-    console.log("isVerified ",isVerified)
+        console.log(isVerified,token)
 
-        console.log(Date.now() ,'   ', isVerified.exp * 1000)
+    // console.log("isVerified ",isVerified)
+
+        // console.log(Date.now() ,'   ', isVerified.exp * 1000)
     if (!isVerified) {
         
         return res.status(404).json({ success: false, message: 'invalide token ' })
@@ -34,10 +35,11 @@ const authenticate = async(req, res, next) => {
           
 
     } catch (error) {
+    
+
         if (error.name === 'TokenExpiredError') {
-
+console.log(error)
             // Handle TokenExpiredError here
-
             return res.status(401).json({ success: false, message: 'Token has expired' });
         } else {
             

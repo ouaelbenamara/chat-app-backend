@@ -7,13 +7,14 @@ const { addNewMessage,
 
 
 const saveMessageController = async (req, res) => {
-    console.log('entered the controller')
-    const { message, sender, distination } = req.body;
-    if (!message || !sender || !distination) {
-        return res.status(401).send("message and sender and distination are required")
+    // console.log('body',req.body)
+    const { message, sender, destination } = req.body;
+    console.log(sender)
+    if (!message || !sender || !destination) {
+        return res.status(401).send("message and sender and destination are required")
 
     }
-    const response = await addNewMessage({ message, sender, distination });
+    const response = await addNewMessage({ message, sender:sender,destination: destination.id });
     if (!response) {
         return res.status(500).send('<h1>error while saving a  message </h1>')
     }
@@ -22,11 +23,14 @@ const saveMessageController = async (req, res) => {
 
 const MessagesController = async (req, res) => {
     const userId  = req.params.userId
-    const messages = await getMessages(userId);
+    const destination = req.params.destination
+    console.log(userId,destination)
+    const messages = await getMessages({userId:userId,destination:destination});
+    
     if (!messages) {
-        return res.status(500).send('<h1>error while retreiving Messages</h1>')
+        return res.status(500).json({message:'<h1>error while retreiving Messages</h1>'})
     }else if(messages.length===0){
-        return res.status(500).send('<h1>there is no messages for this user</h1>')
+        return res.status(200).send({messages:[]})
 
         
     }
@@ -61,7 +65,8 @@ const deleteMessageController = async (req, res) => {
 const updateMessageController = async (req, res) => {
     const messageId = req.params.messageId;
     const newMessage = req.body.message;
-    console.log( messageId, newMessage)
+    const userId = req.body.userId;
+    // console.log( messageId, newMessage)
     if (!messageId || !newMessage) {
         return res.status(500).send("messageId and userId are required to update a message")
     }

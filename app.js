@@ -41,22 +41,22 @@ const io = require('socket.io')(server, {
 });
 
 io.on('connection', (socket) => {
-    console.log(' connected to socket.io id ',socket.id);
-    socket.on('setup',(username)=>{
+    // console.log(' connected to socket.io id ',socket.id);
+    socket.on('setup',(userId)=>{
         // console.log(username)
-        socket.join(username)
+        socket.join(userId)
         socket.emit('connected')
 
     })
-    socket.on('send-message',(message,cb)=>{
-        console.log(message)
-        console.log('hihihih',cb(message))
+    socket.on('send-message',(message,destination,sender)=>{
+        // console.log(message)
+        // console.log('hihihih',cb(message))
         
-        const room ='cM6lOpTPK_Ki1oeMAAAH'
+        // const room ='cM6lOpTPK_Ki1oeMAAAH'
     // socket.broadcast.emit('recieve-message', message, room)
     // socket.broadcast.emit('recieve-message', message)
 
-        socket.to("QS1QWqj-04wYKaUlAAAP").emit('recieve-message', message)
+        socket.to(destination).emit('recieve-message', message,sender)
 
 
 

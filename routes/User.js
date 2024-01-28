@@ -2,30 +2,38 @@ const express = require('express');
 const router = express.Router()
 // importing controllers
 const { usersController,
-    singleUsersController,
+    singleUserController,
     registerController,
     updateUserController,
     deleteUserController,
     logInController, 
     logOutController,
     verificationController,
+    addRequestController,
+    acceptAddRequestController,
+    removeFriendController,
 
-    protectedController } = require('../controllers/User');
+    protectedController, 
+    getAddRequestController} = require('../controllers/User');
 require('../config/authenticationStrategy');
 const { authenticate } = require('../config/authenticationStrategy');
 
 //////////////
 router.get('/', usersController)
-    .get('/user', singleUsersController)
+    .get('/user/:userId', singleUserController)
+    // .post('/user/:userId/editPassword', editPasswordController)
 
     .post('/register', registerController)
 
     .post('/logIn', logInController)
     .get('/protected', authenticate, protectedController)
     .post('/signOut', logOutController)
-    .get('/verify/:email/:token',verificationController)
-    .put('/update/:id', updateUserController)
-
+    .get('/verify/:userId/:token',verificationController)
+    .put('/update/:userId', updateUserController)
+.post('/addRequest',addRequestController)
+.post('/addRequest/:userId',getAddRequestController)
+    .put('/removeFriend/:userId',removeFriendController)
+    .post('/addRequest/accept/:userId',acceptAddRequestController)
     .delete('/delete/:id', deleteUserController)
 
 
@@ -34,7 +42,7 @@ router.get('/', usersController)
 
 
     .all('/*', (req, res) => {
-        res.status(404).send('<h1 style:{{color:\'red\'}}>Error 404 Page not found</h1>')
+        res.status(404).json({success:false,message:'page not found'})
 
     })
 
