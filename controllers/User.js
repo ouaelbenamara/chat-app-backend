@@ -24,7 +24,7 @@ const { response } = require('express');
 
 const usersController = async (req, res) => {
     let respons = await getUsers();
-    respons = respons.map(user => ({ id: user._id, email: user.email, username: user.username ,image:user.image}))
+    respons = respons.map(user => ({ _id: user._id, email: user.email, username: user.username ,image:user.image}))
     if (!respons) {
         return res.status(500).send('<h1>error while retreiving users</h1>')
     }
@@ -50,7 +50,7 @@ const singleUserController = async (req, res) => {
     const userId = req.params.userId
 
     const user = await getUser(userId)
-console.log(userId)
+// console.log(userId)
     const USER = {
         _id: user._id,
         email: user.email,
@@ -59,7 +59,7 @@ console.log(userId)
         friends: user.friends,
         invitations: user.invitations
 }
-console.log(USER)
+// console.log(USER)
     res.status(200).json( USER )
 }
 
@@ -155,7 +155,7 @@ const acceptAddRequestController = async(req,res)=>{
 const removeFriendController = async(req,res)=>{
     const userId = req.params.userId;
     const friendId = req.body.friendId
-    console.log('frieeie')
+    // console.log('frieeie')
     if (!userId || !friendId){
         return res.status(500).json({ success: false, message:'userId and friendId are required'})
     }
@@ -176,7 +176,7 @@ const removeFriendController = async(req,res)=>{
 
 const logInController = async (req, res, next) => {
     const email = req.body.email
-    // console.log(req.body)
+    console.log(req.body)
     await getUserByEmail(email)
         .then(async (user) => {
             if (!user) {
@@ -271,7 +271,7 @@ const updateUserController = async (req, res) => {
     if (!respons) {
         return res.status(500).json({success:false,message:"error while updating user"})
     }
-console.log(respons)
+// console.log(respons)
     res.status(200).json({success:true,message:'user updated successfully'})
 }
 
@@ -283,25 +283,27 @@ const verificationController = async (req, res) => {
 
     if (!userId || !token) {
         console.log('all field are required', userId, token)
-        return false
+        return res.satatus(500).json({success:false,message:'all fiels are required'})
     }
 
 
     const isValide = verifyToken(token);
     if (!isValide) {
         console.log('invalide email token')
-        return false
+        return res.satatus(505).json({ success: false, message: 'invalide email token' })
+
     }
     const user = await getUser(userId).catch(err => {
         return res.status(401).send('error while etting the user to verify')
     })
-    await updateUser(user.password, user._id, user.email, true)
+    await updateUser({ id: user._id, isVerified: true})
         .then(response => {
             if (!response) {
                 return res.status(401).send('user not found')
 
 
             }
+            console
             res.send('<h1>Your account has been verified successfully</h1>')
 
         }).catch(err => {

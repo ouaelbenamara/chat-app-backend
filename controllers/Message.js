@@ -7,14 +7,15 @@ const { addNewMessage,
 
 
 const saveMessageController = async (req, res) => {
-    // console.log('body',req.body)
+    console.log('body',req.body)
     const { message, sender, destination } = req.body;
-    console.log(sender)
+    console.log(destination)
+    // console.log(sender)
     if (!message || !sender || !destination) {
         return res.status(401).send("message and sender and destination are required")
 
     }
-    const response = await addNewMessage({ message, sender:sender,destination: destination.id });
+    const response = await addNewMessage({ message, sender:sender,destination: destination._id });
     if (!response) {
         return res.status(500).send('<h1>error while saving a  message </h1>')
     }
@@ -22,11 +23,12 @@ const saveMessageController = async (req, res) => {
 }
 
 const MessagesController = async (req, res) => {
-    const userId  = req.params.userId
+    const {userId} = req.body
+    console.log('userD',userId)
     const destination = req.params.destination
     console.log(userId,destination)
     const messages = await getMessages({userId:userId,destination:destination});
-    
+    console.log('messaves',messages)
     if (!messages) {
         return res.status(500).json({message:'<h1>error while retreiving Messages</h1>'})
     }else if(messages.length===0){

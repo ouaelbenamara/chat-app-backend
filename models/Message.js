@@ -39,7 +39,7 @@ const updateMessage = async (messageId, newMessage,userId) => {
         const updatedMessage = await Message.updateOne({ _id: messageId,sender:userId }, {
             content: newMessage,
         });
-        console.log(updatedMessage)
+        // console.log(updatedMessage)
 
     } catch (e) {
         console.log('error while updating a  Message on the database', e)
@@ -49,17 +49,22 @@ const updateMessage = async (messageId, newMessage,userId) => {
 
 }
 
-const getMessages = async ({userId,destination}) => {
+const getMessages = async ({userId=null,destination}) => {
     let Messages;
-     userId = userId.toString();
      destination = destination.toString();
     try {
+        if(userId){
+            userId = userId.toString();
+
          Messages = await Message.find({
             $or: [
                 { sender: userId, destination: destination },
                 { sender: destination, destination: userId },
             ],
-        });
+        });}else{
+            Messages = await Message.find({destination: destination });
+console.log(Messages)
+        }
     } catch (e) {
         console.log('error while adding a Message to the database', e)
         return false;

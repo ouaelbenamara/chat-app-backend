@@ -19,13 +19,15 @@ const authenticate = async(req, res, next) => {
         if(response){
             return res.status(403).json({ success: false, message: 'you are using a blackListed token ' })
         }
+        console.log(token)
     const isVerified =  jwt.verify(token, SECRET_KEY);
-        console.log(isVerified,token)
+        // console.log(isVerified,token)
 
     // console.log("isVerified ",isVerified)
 
         // console.log(Date.now() ,'   ', isVerified.exp * 1000)
     if (!isVerified) {
+        console.log('TOEKN',token)
         
         return res.status(404).json({ success: false, message: 'invalide token ' })
     } 
@@ -38,7 +40,7 @@ const authenticate = async(req, res, next) => {
     
 
         if (error.name === 'TokenExpiredError') {
-console.log(error)
+console.log('ERRROR',error)
             // Handle TokenExpiredError here
             return res.status(401).json({ success: false, message: 'Token has expired' });
         } else {

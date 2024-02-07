@@ -88,7 +88,7 @@ const deleteUser = async ({ userNameToDelete }) => {
 
     try {
         const deletedUser = await User.deleteOne({ username: userNameToDelete });
-        console.log(deletedUser);
+        // console.log(deletedUser);
     } catch (e) {
         console.log('error while finding a user on the database', e)
         return false;
